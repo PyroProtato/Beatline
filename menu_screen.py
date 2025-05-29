@@ -18,12 +18,13 @@ pygame.display.set_caption('Window')
 
 
 class Level:
-  def __init__(self, name, picture, difficulty, position):
+  def __init__(self, name, picture, author, difficulty, position):
     self.position = position - 1
     self.name = name
     self.picture = pygame.transform.scale(pygame.image.load(picture), (200, 150))
     self.difficulty = difficulty
     self.scroll_pos = 0
+    self.author = author
 
     self.height = 150
     self.width = 650
@@ -39,18 +40,27 @@ class Level:
     self.title_text_rect = self.title_text.get_rect()
     self.difficulty_text = self.level_difficulty_font.render(f"Difficulty: {self.difficulty}", True, (255, 255, 255))
     self.difficulty_text_rect = self.difficulty_text.get_rect()
+    self.author_text = self.level_difficulty_font.render(f"{self.author}", True, (255, 255, 255))
+    self.author_text_rect = self.author_text.get_rect()
 
     self.outline = pygame.Rect(self.x, 0, self.width, self.height)
 
     self.anim_begin = False
     self.free = False
 
+    self.chosen = False
+    self.anim_end = False
+
+    self.running_animation = False
+
 
   def update(self, scroll_pos, mousePos):
-    self.scroll_pos = scroll_pos
+    if not self.running_animation:
+        self.scroll_pos = scroll_pos
+        print("RAN")
 
-    if self.free:
-      if self.outline.collidepoint(mousePos[0], mousePos[1]):
+    if self.free and not self.running_animation:
+      if mousePos[0] > 400 and mousePos[1] > self.position*self.spacing+25 and mousePos[1] < self.position*self.spacing+self.height+75:
         self.x = 450
       else:
         self.x = 500
@@ -63,27 +73,56 @@ class Level:
       else:
         self.begin_interval -= self.begin_metainterval
         self.x -= self.begin_interval
+    
+    if self.anim_end:
+      if self.scroll_pos < 0-self.end_interval:
+        self.scroll_pos += self.end_interval
+      else:
+        self.scroll_pos = 0
+        self.anim_end = False
+
 
   def b_anim(self):
-    print("ran")
     self.anim_begin = True
     self.begin_interval = 40
     self.begin_metainterval = 1.1
 
-    
+  def e_anim(self):
+    self.running_animation = True
+    if self.chosen:
+        self.anim_end = True
+        self.end_interval = 20
+        self.x = 275
+        self.scroll_pos = -self.height
+
+  def checkPress(self, mousePos, mouseUp):
+    if mouseUp and self.outline.collidepoint(mousePos[0], mousePos[1]):
+      self.chosen = True
+      return True
+    return False
+
 
   def draw(self, surface):
-    top = 50+self.spacing*self.position-self.scroll_pos
+    if not self.running_animation or self.chosen == False:
+        top = 50+self.spacing*self.position-self.scroll_pos
+    else:
+      top = self.scroll_pos
     self.outline = pygame.Rect(self.x, top, self.width, self.height)
     self.title_text_rect.topleft = (self.x+200+25, top+25)
-    self.difficulty_text_rect.bottomleft = (self.x+200+25, top+self.height-12)
+    self.author_text_rect.bottomleft = (self.x+200+25, top+self.height-12)
+    self.difficulty_text_rect.bottomleft = (self.x+200+(self.width-200)//2+25, top+self.height-12)
 
-    surface.blit(self.picture, (self.x, top))
-    pygame.draw.line(WINDOW, (255, 255, 255), (self.x+200, top), (self.x+200, top+self.height-1), 5)
-    pygame.draw.line(WINDOW, (255, 255, 255), (self.x+200, top+self.title_text_rect.height+35), (self.x+self.width-1, top+self.title_text_rect.height+35), 5)
-    pygame.draw.rect(surface, (255, 255, 255), self.outline, 5)
-    surface.blit(self.title_text, self.title_text_rect)
-    surface.blit(self.difficulty_text, self.difficulty_text_rect)
+    if self.running_animation and not self.chosen:
+      pass
+    else:
+        surface.blit(self.picture, (self.x, top))
+        pygame.draw.line(WINDOW, (255, 255, 255), (self.x+200, top), (self.x+200, top+self.height-1), 5)
+        pygame.draw.line(WINDOW, (255, 255, 255), (self.x+200, top+self.title_text_rect.height+35), (self.x+self.width-1, top+self.title_text_rect.height+35), 5)
+        pygame.draw.line(WINDOW, (255, 255, 255), (self.x+200+(self.width-200)//2, top+self.title_text_rect.height+35), (self.x+200+(self.width-200)//2, top+self.height-1), 5)
+        pygame.draw.rect(surface, (255, 255, 255), self.outline, 5)
+        surface.blit(self.title_text, self.title_text_rect)
+        surface.blit(self.author_text, self.author_text_rect)
+        surface.blit(self.difficulty_text, self.difficulty_text_rect)
 
 
 
@@ -124,10 +163,19 @@ class menu_screen:
 
     #Levels Animation
     self.levelsanim = False
+    
+
+    #Chose Animation
+    self.chose_anim = False
+    self.chose_y_offset = 0
+    self.chose_interval = 1
+    self.chose_metainterval = 1.1
+
 
     #Levels
     self.levels = []
-    self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", 5, 1))
+    self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 4, 1))
+    self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", "Toby Fox", 5, 2))
   
 
 
@@ -175,6 +223,26 @@ class menu_screen:
     
     for level in self.levels:
       level.update(0, self.mousePos)
+      if level.checkPress(self.mousePos, self.mouseUp):
+        self.chose_anim = True
+
+    
+    if self.chose_anim:
+        if self.chose_y_offset < 120000.0:
+            self.chose_y_offset *= self.chose_metainterval
+            self.chose_y_offset += self.chose_interval
+
+            self.title_rect.centery-=self.chose_y_offset
+            self.title_bg.centery -= self.chose_y_offset
+
+            for level in self.levels:
+                level.scroll_pos += self.chose_y_offset
+        else:
+          self.chose_anim = False
+          for level in self.levels:
+            level.e_anim()
+            print(level.chosen)
+      
     
 
 
