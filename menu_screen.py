@@ -33,7 +33,7 @@ class Level:
 
     self.spacing = 200
 
-    self.level_title_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 60)
+    self.level_title_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 50)
     self.level_difficulty_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
 
     self.title_text = self.level_title_font.render(name, True, (255, 255, 255))
@@ -57,7 +57,6 @@ class Level:
   def update(self, scroll_pos, mousePos):
     if not self.running_animation:
         self.scroll_pos = scroll_pos
-        print("RAN")
 
     if self.free and not self.running_animation:
       if mousePos[0] > 400 and mousePos[1] > self.position*self.spacing+25 and mousePos[1] < self.position*self.spacing+self.height+75:
@@ -80,6 +79,9 @@ class Level:
       else:
         self.scroll_pos = 0
         self.anim_end = False
+        return True
+    
+    return False
 
 
   def b_anim(self):
@@ -174,8 +176,9 @@ class menu_screen:
 
     #Levels
     self.levels = []
-    self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 4, 1))
-    self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", "Toby Fox", 5, 2))
+    self.levels.append(Level("Field of Hopes an...", "images/deltarune_fileselect.png", "Toby Fox", 2, 1))
+    self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 4, 2))
+    self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", "Toby Fox", 5, 3))
   
 
 
@@ -222,7 +225,8 @@ class menu_screen:
         self.levelsanim = False
     
     for level in self.levels:
-      level.update(0, self.mousePos)
+      if level.update(0, self.mousePos):
+        return "game_init", level
       if level.checkPress(self.mousePos, self.mouseUp):
         self.chose_anim = True
 
@@ -241,7 +245,6 @@ class menu_screen:
           self.chose_anim = False
           for level in self.levels:
             level.e_anim()
-            print(level.chosen)
       
     
 
@@ -261,7 +264,7 @@ class menu_screen:
       level.draw(WINDOW)
     
 
-    return "menu"
+    return "menu", ""
 
 
 

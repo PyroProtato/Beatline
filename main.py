@@ -2,6 +2,7 @@ import pygame, sys, random, asyncio
 from pygame.locals import *
 from start_screen import start_screen
 from menu_screen import menu_screen
+from game_screen import game_screen
 pygame.init()
  
 
@@ -26,6 +27,7 @@ pygame.display.set_caption('Window')
 async def main () :
   
   state = "start"
+  level = ""
 
   """INITIATE THE SCREENS"""
   start = start_screen()
@@ -33,6 +35,9 @@ async def main () :
 
   menu = menu_screen()
   menu.running = False
+
+  game = game_screen(level)
+  game.running = False
 
 
   """MAIN GAME LOOP"""
@@ -50,16 +55,30 @@ async def main () :
       state = start.run(events)
     
     if menu.running:
-      state = menu.run(events)
+      state, level = menu.run(events)
+    
+    if game.running:
+      state = game.run(events)
 
     
+    #Init State
+    if state == "game_init":
+      game = game_screen(level)
+      state = "game"
+
     #State
     if state == "start":
       start.running = True
       menu.running = False
+      game.running = False
     elif state == "menu":
       start.running = False
       menu.running = True
+      game.running = False
+    elif state == "game":
+      start.running = False
+      menu.running = False
+      game.running = True
 
 
 

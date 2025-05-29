@@ -1,9 +1,10 @@
 import pygame, sys, random, asyncio
 from pygame.locals import *
+from menu_screen import Level
 pygame.init()
  
 # Colours
-COLOR_BACKGROUND = (255, 255, 255)
+COLOR_BACKGROUND = (0, 0, 0)
  
 # Game Setup
 FPS = 60
@@ -15,9 +16,43 @@ WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE
 pygame.display.set_caption('Window')
 
 
-class Screen1:
+
+
+class Key:
+  def __init__(self, key, key_str, coords):
+    self.x = coords[0]
+    self.y = coords[1]
+
+    self.width = 100
+    self.height = 100
+
+    self.outline = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    self.key_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 50)
+    self.text = self.key_font.render(key_str, True, (255, 255, 255))
+    self.text_rect = self.text.get_rect()
+    self.text_rect.center = (self.x+self.width//2, self.y+self.height//2)
+
+    self.key = key
+
+
+
+  def draw(self, surface):
+    pygame.draw.rect(surface, (255, 255, 255), self.outline, 5)
+    surface.blit(self.text, self.text_rect)
+
+  
+
+
+
+
+
+
+
+
+class game_screen:
   #Initializes all of the variables that are needed for the screen to work
-  def __init__(self):
+  def __init__(self, level):
 
     #STATE
     self.running = False
@@ -31,6 +66,12 @@ class Screen1:
     self.mouseUp = False
     self.mouseDown = False
     self.mousePos = None
+
+    #Param
+    self.level = level
+
+    #Keys
+    self.j_key = Key(K_j, "J", (500, 500))
   
 
 
@@ -59,6 +100,12 @@ class Screen1:
     """DRAW TO SCREEN"""
     WINDOW.fill(self.color_bg)
 
+    self.level.draw(WINDOW)
+
+    self.j_key.draw(WINDOW)
+
+
+    return "game"
 
 
 
@@ -67,13 +114,13 @@ class Screen1:
 
 
 
-
+'''
  
 # The main function that controls the game
 async def main () :
 
   """INITIATE THE SCREENS"""
-  s1 = Screen1()
+  s1 = game_screen(Level("Field of Hopes an...", "images/deltarune_fileselect.png", "Toby Fox", 2, 1))
   s1.running = True
 
 
@@ -102,3 +149,5 @@ async def main () :
     await asyncio.sleep(0)
 
 asyncio.run(main())
+
+'''
