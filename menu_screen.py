@@ -179,6 +179,12 @@ class menu_screen:
     self.levels.append(Level("Field of Hopes an...", "images/deltarune_fileselect.png", "Toby Fox", 2, 1))
     self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 4, 2))
     self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", "Toby Fox", 5, 3))
+
+
+    #Button
+    self.creator_btn = Button((25, 600), (350, 100), (255, 255, 255))
+    self.creator_btn.add_border(5, (0, 0, 0))
+    self.creator_btn.add_text(pygame.font.Font("fonts/CAT Rhythmus.ttf", 30), "Beatmap Creator", (0, 0, 0))
   
 
 
@@ -245,6 +251,11 @@ class menu_screen:
           self.chose_anim = False
           for level in self.levels:
             level.e_anim()
+
+    self.creator_btn.update((200, 200, 200), (150, 150, 150), self.mousePos, self.mouseIsDown)
+
+    if self.creator_btn.check_press(self.mousePos, self.mouseUp):
+      return "creator_init", ""
       
     
 
@@ -262,6 +273,8 @@ class menu_screen:
 
     for level in self.levels:
       level.draw(WINDOW)
+
+    self.creator_btn.draw(WINDOW)
     
 
     return "menu", ""

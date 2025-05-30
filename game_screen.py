@@ -72,6 +72,9 @@ class game_screen:
 
     #Keys
     self.j_key = Key(K_j, "J", (500, 500))
+    self.k_key = Key(K_k, "K", (600, 500))
+    self.l_key = Key(K_l, "L", (700, 500))
+    self.semi_key = Key(K_SEMICOLON, ";", (800, 500))
   
 
 
@@ -103,6 +106,9 @@ class game_screen:
     self.level.draw(WINDOW)
 
     self.j_key.draw(WINDOW)
+    self.k_key.draw(WINDOW)
+    self.l_key.draw(WINDOW)
+    self.semi_key.draw(WINDOW)
 
 
     return "game"
