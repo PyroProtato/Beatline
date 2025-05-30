@@ -406,7 +406,6 @@ class Slider:
         pygame.draw.rect(surface, self.background_rect_border_color, self.back_rect, self.background_rect_border_width, border_radius=self.background_rect_radius)
 
         #Slider
-        print(self.slider_rect_color)
         pygame.draw.rect(surface, self.slider_rect_color, self.slider, border_radius=self.slider_radius)
         pygame.draw.rect(surface, self.slider_border_color, self.slider, self.slider_border_width, border_radius=self.slider_radius)
 

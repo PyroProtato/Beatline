@@ -24,9 +24,28 @@ class Song():
 
     if self.song_str == "Megalovania":
       self.BPM = 120
+      self.measures = 78
+      self.time_signature = 4
+    elif self.song_str == "Field of Hopes and Dreams":
+      self.BPM = 125
+      self.measures = 84
+      self.time_signature = 4
+    elif self.song_str == "Hunger":
+      self.BPM = 86
+      self.measures = 64 
+      self.time_signature = 4
+    self.measure_len = self.time_signature/(self.BPM/60)*1000
 
     self.position = 0
     self.offset = 0
+
+    self.playing_measure = False
+  
+  def update(self):
+    if self.playing_measure:
+      if pygame.mixer.music.get_pos() > self.measure_len:
+        self.pause_measure()
+
 
   def play_song(self):
     pygame.mixer.music.play(1, start=round(self.position/1000.0, 5))
@@ -38,6 +57,14 @@ class Song():
 
   def set_position(self, position):
     self.position = position
+  
+  def play_measure(self, measure):
+    self.position = (measure-1)*self.measure_len
+    self.play_song()
+    self.playing_measure = True
+  
+  def pause_measure(self):
+    pygame.mixer.music.stop()
 
 
 
@@ -67,10 +94,16 @@ class creator_screen:
     self.play_btn = Button((570, 720), (60, 60), (0, 0, 0))
     self.play_btn.add_border(5, (255, 255, 255))
 
+    #Measure Button
+    self.measure_paused = True
+    self.measure_btn = Button((630, 720), (60, 60), (0, 0, 0))
+    self.measure_btn.add_border(5, (255, 255, 255))
+
     #Song Dropdown
     self.dropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
     self.song_dropdown = Dropdown((400, 100), (400, 25), "Song", ["Megalovania", "Field of Hopes and Dreams", "Hunger"], self.dropdown_font)
     self.song_chosen = False
+    self.previous_song = "Song"
 
     #Song Bar
     self.measures = 164
@@ -80,6 +113,11 @@ class creator_screen:
     #Measure Bar
     self.measure_slider = Slider((800, 15), (200, 650), (20, 40), 1, self.measures, 1)
     self.measure_slider.change_slider(slider_rect_color=(255, 255, 255))
+
+    #Subdivisions Dropdown
+    self.subdivision = 4
+    self.subdropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 15)
+    self.sub_dropdown = Dropdown((200, 50), (25, 25), "Snap To...", ["1/2 Beat", "1/3 Beat", "1/4 Beat", "1/6 Beat", "1/8 Beat", "1/12 Beat", "1/16 Beat"], self.subdropdown_font)
     
     
   
@@ -113,6 +151,18 @@ class creator_screen:
         self.paused = True
         self.song.pause_song()
 
+    #Updates Song
+    if self.song_chosen:
+      self.song.update()
+
+
+    #Measure Button
+    self.measure_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+    if self.measure_btn.check_press(self.mousePos, self.mouseUp):
+      self.song.play_measure(self.measure)
+    
+
+    #Song Dropdown
     self.song_dropdown.update(self.mousePos, self.mouseDown, self.mouseUp)
     if self.song == None and self.song_dropdown.value != "Song":
       self.song_chosen = True
@@ -121,8 +171,20 @@ class creator_screen:
       pass
     elif self.song.song_str != self.song_dropdown.value:
       self.song = Song(f"songs/{self.song_dropdown.value}.ogg")
+    if self.song_dropdown.value != self.previous_song: #Initializes
+      self.song_slider = Slider((1000, 20), (100, 690), (20, 40), 1, self.song.measures, 1)
+      self.song_slider.change_slider(slider_rect_color=(255, 255, 255))
+    self.previous_song = self.song_dropdown.value
+
+    self.sub_dropdown.update(self.mousePos, self.mouseDown, self.mouseUp)
+    if self.song_chosen and self.sub_dropdown.value != "Snap To...":
+      self.subdivision = int(self.sub_dropdown.value.removeprefix("1/").removesuffix(" Beat"))
     
-    self.song_slider.update(self.mousePos, self.mouseDown, self.mouseUp)
+    if self.song_chosen:
+      self.song_slider.update(self.mousePos, self.mouseDown, self.mouseUp)
+      self.measure = self.song_slider.step
+
+
     self.measure_slider.update(self.mousePos, self.mouseDown, self.mouseUp)
 
 
@@ -132,9 +194,13 @@ class creator_screen:
     self.song_dropdown.draw(WINDOW)
     if self.song_chosen:
       self.play_btn.draw(WINDOW)
-      pygame.draw.line(WINDOW, (255, 255, 255), (100, 700), (1100, 700), 5)
+      self.measure_btn.draw(WINDOW)
+      self.sub_dropdown.draw(WINDOW)
       self.song_slider.draw(WINDOW)
       self.measure_slider.draw(WINDOW)
+      for i in range(self.subdivision):
+        x = 200+i*self.measure_slider.width/self.subdivision
+        pygame.draw.line(WINDOW, (255, 255, 255), (x, 640), (x, 675), 5)
     
 
 
