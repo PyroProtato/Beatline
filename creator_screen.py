@@ -57,7 +57,6 @@ class Song():
 
   def play_song(self, measure=-1):
     self.playing = True
-    print(measure)
     if measure == -1:
       pygame.mixer.music.play(1, start=round(self.position/1000.0, 5))
     else:
@@ -82,6 +81,63 @@ class Song():
   
   def pause_measure(self):
     pygame.mixer.music.stop()
+
+
+
+
+class Key:
+  def __init__(self, key, key_str, coords):
+    self.x = coords[0]
+    self.y = coords[1]
+
+    self.width = 100
+    self.height = 100
+
+    self.key_str = key_str
+
+    self.activated_color = (255, 255, 255)
+    self.deactivated_color = (150, 150, 150)
+    self.chosen_color = (255, 255, 50)
+
+    self.outline = Button((self.x, self.y), (self.width, self.height), (0, 0, 0))
+    self.key_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 50)
+    self.outline.add_text(self.key_font, key_str, self.deactivated_color)
+    self.outline.add_border(5, self.deactivated_color)
+
+    self.key = key
+    self.beat1 = False
+
+    self.activated = False
+
+    self.playing = False
+
+  
+  def beat(self):
+    self.beat1 = True
+
+  def has_beat(self):
+    self.outline.add_border(5, self.chosen_color)
+
+  def no_beat(self):
+    self.outline.add_border(5, self.activated_color)
+
+
+  def update(self, mousePos, mousePressed):
+    self.outline.update((100, 100, 100), (50, 50, 50), mousePos, mousePressed)
+  
+  def check_press(self, mousePos, mouseUp):
+    if self.outline.check_press(mousePos, mouseUp):
+      self.activated = True
+      self.outline.add_text(self.key_font, self.key_str, self.activated_color)
+      return True
+    return False
+
+  def draw(self, surface):
+    if self.activated:
+      if self.beat1:
+        self.beat1 = False
+        self.outline.add_border(5, self.chosen_color)
+    self.outline.draw(surface)
 
 
 
@@ -124,6 +180,34 @@ class creator_screen:
     self.measure_btn_image_rect = self.measure_btn_image.get_rect()
     self.measure_btn_image_rect.center = (680, 750)
 
+    #Previous Measure Icon
+    self.prev_measure_btn = Button((25, 670), (60, 60), (0, 0, 0))
+    self.prev_measure_btn.add_border(5, (255, 255, 255))
+    self.prev_measure_btn_image = pygame.transform.flip(pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40)), True, False)
+    self.prev_measure_btn_image_rect = self.prev_measure_btn_image.get_rect()
+    self.prev_measure_btn_image_rect.center = (55, 700)
+
+    #Next Measure Icon
+    self.next_measure_btn = Button((1115, 670), (60, 60), (0, 0, 0))
+    self.next_measure_btn.add_border(5, (255, 255, 255))
+    self.next_measure_btn_image = pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40))
+    self.next_measure_btn_image_rect = self.next_measure_btn_image.get_rect()
+    self.next_measure_btn_image_rect.center = (1145, 700)
+
+    #Previous Song Icon
+    self.prev_song_btn = Button((25, 600), (60, 60), (0, 0, 0))
+    self.prev_song_btn.add_border(5, (255, 255, 255))
+    self.prev_song_btn_image = pygame.transform.flip(pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40)), True, False)
+    self.prev_song_btn_image_rect = self.prev_song_btn_image.get_rect()
+    self.prev_song_btn_image_rect.center = (55, 630)
+
+    #Next Song Icon
+    self.next_song_btn = Button((1115, 600), (60, 60), (0, 0, 0))
+    self.next_song_btn.add_border(5, (255, 255, 255))
+    self.next_song_btn_image = pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40))
+    self.next_song_btn_image_rect = self.next_song_btn_image.get_rect()
+    self.next_song_btn_image_rect.center = (1145, 630)
+
     #Song Dropdown
     self.dropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
     self.song_dropdown = Dropdown((400, 100), (400, 25), "Song", ["Megalovania", "Field of Hopes and Dreams", "Hunger"], self.dropdown_font)
@@ -134,6 +218,7 @@ class creator_screen:
     self.measures = 164
     self.song_slider = Slider((1000, 20), (100, 690), (20, 40), 1, self.measures, 1)
     self.song_slider.change_slider(slider_rect_color=(255, 255, 255))
+    self.prev_song_slider = self.song_slider.step
 
     #Song Indicator
     self.measure_indicator = pygame.Rect(0, 600, 5, 55)
@@ -142,6 +227,7 @@ class creator_screen:
     self.measure_slider = Slider((800, 5), (200, 625), (20, 40), 0, 4, 0)
     self.measure_slider.change_slider(slider_rect_color=(0, 0, 0), slider_border_color=(255, 255, 255))
     self.measure_slider.change_background(background_rect_border_color=(255, 255, 255))
+    self.measure_init_empty = True
 
     #Measure Indicator
     self.measure_indicator = pygame.Rect(0, 600, 5, 55)
@@ -153,6 +239,24 @@ class creator_screen:
     self.previous_sub_value = "Snap To..."
     self.subdropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 15)
     self.sub_dropdown = Dropdown((200, 50), (25, 25), "Snap To...", ["1/2 Beat", "1/3 Beat", "1/4 Beat", "1/6 Beat", "1/8 Beat", "1/12 Beat", "1/16 Beat"], self.subdropdown_font)
+
+    #Data
+    self.data = [[None, [[] for x in range(self.subdivision)]] for y in range(self.measures)]
+
+    #measure Text
+    self.measure_text_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
+    self.measure_text = self.measure_text_font.render(f"Measure: {self.measure}", True, (255, 255, 255))
+    self.measure_text_rect = self.measure_text.get_rect()
+    self.measure_text_rect.midleft = (600,50)
+
+    #Keys
+    self.keys = []
+    self.keys.append(Key(K_j, "J", (200, 300)))
+    self.keys.append(Key(K_k, "K", (400, 300)))
+    self.keys.append(Key(K_l, "L", (600, 300)))
+
+    #Misc
+    self.selected_subdivision = 4
     
     
   
@@ -195,11 +299,12 @@ class creator_screen:
       self.song.update()
 
 
-    print(self.measure)
     #Measure Button
     self.measure_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
     if self.measure_btn.check_press(self.mousePos, self.mouseUp):
       self.song.play_measure(self.measure)
+
+    
     
 
     #Song Dropdown
@@ -214,19 +319,46 @@ class creator_screen:
     if self.song_dropdown.value != self.previous_song: #Initializes
       self.song_slider = Slider((1000, 20), (100, 690), (20, 40), 1, self.song.measures, 1)
       self.song_slider.change_slider(slider_rect_color=(255, 255, 255))
+      self.data = [[None, [[] for x in range(self.subdivision)]] for y in range(self.song.measures)]
     self.previous_song = self.song_dropdown.value
 
-    self.sub_dropdown.update(self.mousePos, self.mouseDown, self.mouseUp)
-    if self.song_chosen and self.previous_sub_value != self.sub_dropdown.value:
-      self.subdivision = int(self.sub_dropdown.value.removeprefix("1/").removesuffix(" Beat"))
-      self.measure_slider = Slider((800, 5), (200, 625), (20, 40), 0, self.subdivision, 0)
-      self.measure_slider.change_slider(slider_rect_color=(0, 0, 0), slider_border_color=(255, 255, 255))
-      self.measure_slider.change_background(background_rect_border_color=(255, 255, 255))
-    self.previous_sub_value = self.sub_dropdown.value
-    
     if self.song_chosen:
       self.song_slider.update(self.mousePos, self.mouseDown, self.mouseUp)
       self.measure = self.song_slider.step
+    
+
+    #Previous Measure Button
+    if self.song_chosen:
+      self.prev_measure_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      if self.prev_measure_btn.check_press(self.mousePos, self.mouseUp) and self.measure != 1:
+        self.measure -= 1
+    
+    #Next Measure Button
+      self.next_measure_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      if self.next_measure_btn.check_press(self.mousePos, self.mouseUp) and self.measure != self.song.measures:
+        self.measure += 1
+    
+    #Previous Song Button
+      self.prev_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      if self.prev_song_btn.check_press(self.mousePos, self.mouseUp) and self.measure_slider.step != 0:
+        self.measure_slider.step -= 1
+
+    #next Song Button
+      self.next_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      if self.next_song_btn.check_press(self.mousePos, self.mouseUp) and self.measure_slider.step != self.subdivision-1:
+        self.measure_slider.step += 1
+
+    self.sub_dropdown.update(self.mousePos, self.mouseDown, self.mouseUp)
+    if self.song_chosen and self.previous_sub_value != self.sub_dropdown.value: #When subdivision is changed
+      self.subdivision = int(self.sub_dropdown.value.removeprefix("1/").removesuffix(" Beat"))
+      self.measure_slider = Slider((800, 5), (200, 625), (20, 40), 0, self.subdivision, 0)
+      self.measure_slider.change_slider(slider_rect_color=(0, 0, 0), slider_border_color=(255, 255, 255))
+      self.measure_slider.change_background(background_rect_border_color=(255, 255, 255))    
+      if self.sub_dropdown.changed:
+        self.data[self.measure-1] = [self.subdivision, [[] for x in range(self.subdivision)]]
+        self.selected_subdivision = self.subdivision
+    self.previous_sub_value = self.sub_dropdown.value
+    
 
 
     self.measure_slider.update(self.mousePos, self.mouseDown, self.mouseUp)
@@ -244,15 +376,59 @@ class creator_screen:
         self.measure_indicator.centerx = self.measure_slider.x + round(((pygame.mixer.music.get_pos()+self.song.offset)%self.song.measure_len)/self.song.measure_len*self.measure_slider.width)
       else:
         self.measure_indicator.centerx = self.measure_slider.x
+
+    #Whenever Song Slider Changes
+    if self.song_chosen:
+      if self.song_slider.step != self.prev_song_slider:
+        self.measure_init_empty = True
+        for beat in self.data[self.measure-1][1]:
+          if beat != []:
+            self.measure_init_empty = False  
+        if self.measure_init_empty:
+          self.data[self.measure-1] = [self.selected_subdivision, [[] for x in range(self.subdivision)]]
+      self.prev_song_slider = self.song_slider.step
     
 
     self.song_slider.step = self.measure
+
+
+    #Measure Text
+    self.measure_text = self.measure_text_font.render(f"Measure: {self.measure}", True, (255, 255, 255))
+    self.measure_text_rect = self.measure_text.get_rect()
+    self.measure_text_rect.midleft = (900,50)
+    
+    #Keys
+    if self.song_chosen and self.measure_slider.step != self.subdivision:
+      if self.data[self.measure-1][0] != self.subdivision and self.data[self.measure-1][0] != None and not self.measure_init_empty:
+        self.sub_dropdown.set_value(f"1/{self.data[self.measure-1][0]} Beat")
+
+      if self.data[self.measure-1][0] == None:
+        self.data[self.measure-1][0] = self.subdivision
+        self.data[self.measure-1][1] = [[] for x in range(self.subdivision)]
+
+      for key in self.keys:
+        key.update(self.mousePos, self.mouseIsDown)
+        temp = False
+        for note in self.data[self.measure-1][1][self.measure_slider.step]:
+          if note["key"] == key.key_str:
+            temp = True
+        if temp:
+          key.has_beat()
+        else:
+          key.no_beat()
+          if key.check_press(self.mousePos, self.mouseUp):
+            self.data[self.measure-1][1][self.measure_slider.step].append({"key":key.key_str, "type":1})
+    
+    print(self.data)
+
+
 
 
 
     """DRAW TO SCREEN"""
     WINDOW.fill(self.color_bg)
     self.song_dropdown.draw(WINDOW)
+    WINDOW.blit(self.measure_text, self.measure_text_rect)
     if self.song_chosen:
       for i in range(self.subdivision):
         x = 200+i*self.measure_slider.width/self.subdivision
@@ -262,12 +438,23 @@ class creator_screen:
         WINDOW.blit(self.pause_btn_image, self.pause_btn_image_rect)
       else:
         WINDOW.blit(self.play_btn_image, self.play_btn_image_rect)
+      self.prev_measure_btn.draw(WINDOW)
+      WINDOW.blit(self.prev_measure_btn_image, self.prev_measure_btn_image_rect)
+      self.next_measure_btn.draw(WINDOW)
+      WINDOW.blit(self.next_measure_btn_image, self.next_measure_btn_image_rect)
+      self.prev_song_btn.draw(WINDOW)
+      WINDOW.blit(self.prev_song_btn_image, self.prev_song_btn_image_rect)
+      self.next_song_btn.draw(WINDOW)
+      WINDOW.blit(self.next_song_btn_image, self.next_song_btn_image_rect)
+
       self.measure_btn.draw(WINDOW)
       WINDOW.blit(self.measure_btn_image, self.measure_btn_image_rect)
       self.sub_dropdown.draw(WINDOW)
       self.song_slider.draw(WINDOW)
       self.measure_slider.draw(WINDOW)
       pygame.draw.rect(WINDOW, (255, 255, 255), self.measure_indicator)
+      for key in self.keys:
+        key.draw(WINDOW)
       
     
 

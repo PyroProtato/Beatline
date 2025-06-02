@@ -436,6 +436,8 @@ class Dropdown:
 
         self.triangle_points = None
 
+        self.changed = False
+
         #Display Rect
         self.display_rect_color = (255, 255, 255)
         self.display_rect_text_color = (0, 0, 0)
@@ -450,6 +452,7 @@ class Dropdown:
         self.option_text_color = (0, 0, 0)
     
     def update(self, mousePos, mouseDown, mouseUp):
+        self.changed = False
         #Detects when the button is being pressed
         if mousePos[0] >= self.x and mousePos[0] <= self.x+self.width and mousePos[1] >= self.y and mousePos[1] <= self.y+self.height and mouseUp and self.on_mouse:
             if self.open:
@@ -469,6 +472,11 @@ class Dropdown:
                     self.display_rect_text = self.font.render(entry, True, self.display_rect_text_color)
                     self.value = entry
                     self.open = False
+                    self.changed = True
+
+    def set_value(self, text):
+        self.value = text
+        self.display_rect_text = self.font.render(self.value, True, self.display_rect_text_color)
 
     
     def changeDisplayRect(self, display_rect_color:tuple = None, display_rect_border_width:int = None, display_rect_border_color:tuple = None, display_rect_text_color:tuple = None):

@@ -14,7 +14,7 @@ WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
  
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
-pygame.display.set_caption('Window')
+pygame.display.set_caption('Beatline')
 
 
 
