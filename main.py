@@ -19,7 +19,7 @@ pygame.display.set_caption('Beatline')
 
 
 
-    
+MEGALOVANIA_DATA = [[4, [[{'key': 'K', 'type': 1}], [], [{'key': 'J', 'type': 1}, {'key': 'L', 'type': 1}], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]], [None, [[], [], [], []]]]
 
 
 
@@ -37,7 +37,7 @@ async def main () :
   menu = menu_screen()
   menu.running = False
 
-  game = game_screen(level)
+  game = game_screen(level, MEGALOVANIA_DATA, ["A", "S", "D", "F", "J", "K", "L", ";"])
   game.running = False
 
   creator = creator_screen()
@@ -70,7 +70,10 @@ async def main () :
     
     #Init State
     if state == "game_init":
-      game = game_screen(level)
+      if level.name == "Megalovania":
+        data = MEGALOVANIA_DATA
+        keys = ["A", "S", "D", "F", "J", "K", "L", ";"]
+      game = game_screen(level, data, keys)
       state = "game"
     elif state == "creator_init":
       creator = creator_screen()

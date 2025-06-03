@@ -182,7 +182,7 @@ class menu_screen:
 
 
     #Button
-    self.creator_btn = Button((25, 600), (350, 100), (255, 255, 255))
+    self.creator_btn = Button((25-400, 600), (350, 100), (255, 255, 255))
     self.creator_btn.add_border(5, (0, 0, 0))
     self.creator_btn.add_text(pygame.font.Font("fonts/CAT Rhythmus.ttf", 30), "Beatmap Creator", (0, 0, 0))
   
@@ -222,6 +222,7 @@ class menu_screen:
         self.title_rect.centery = 125
       self.title_x -= self.interval
       self.title_bg.x += self.interval
+      self.creator_btn.x += self.interval
     self.title_rect.centerx = self.title_x
 
 
@@ -244,6 +245,7 @@ class menu_screen:
 
             self.title_rect.centery-=self.chose_y_offset
             self.title_bg.centery -= self.chose_y_offset
+            self.creator_btn.y -= self.chose_y_offset
 
             for level in self.levels:
                 level.scroll_pos += self.chose_y_offset
