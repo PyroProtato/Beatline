@@ -1,6 +1,7 @@
 import pygame, sys, random, asyncio
 from pygame.locals import *
 from menu_screen import Level
+from reference.classes_v2 import Button
 pygame.init()
  
 # Colours
@@ -22,6 +23,10 @@ PERFECT_COLOR = (255, 255, 50)
 EXCELLENT_COLOR = (255, 100, 255)
 GOOD_COLOR = (100, 100, 255)
 MISS_COLOR = (255, 50, 50)
+
+HIT_SOUND = pygame.mixer.Sound("sounds/kick_drum.ogg")
+
+hit_channel = pygame.mixer.Channel(0)
 
 
 
@@ -48,9 +53,9 @@ class Key:
     self.key = key
     self.key_pressed = False
 
-    self.perfect_tolerance = 5
-    self.excellent_tolerance = 20
-    self.good_tolerance = 40
+    self.perfect_tolerance = 20
+    self.excellent_tolerance = 40
+    self.good_tolerance = 75
 
     self.color = (255, 255, 255)
     self.hold_frames = 0
@@ -104,10 +109,13 @@ class Key:
   def beat(self, type):
     if type == "Perfect":
       self.color = PERFECT_COLOR
+      hit_channel.play(HIT_SOUND)
     elif type == "Excellent":
       self.color = EXCELLENT_COLOR
+      hit_channel.play(HIT_SOUND)
     elif type == "Good":
       self.color = GOOD_COLOR
+      hit_channel.play(HIT_SOUND)
     elif type == "Miss":
       self.color = MISS_COLOR
     self.hold_frames = 6
@@ -140,7 +148,8 @@ class Beatmap:
       self.BPM = 120
       self.measures = 78
       self.time_signature = 4
-    elif self.song_str == "Field of Hopes and Dreams":
+    elif self.song_str == "Field of Hopes an...":
+      self.song_str = "Field of Hopes an..."
       self.song_path = "songs/Field of Hopes and Dreams.ogg"
       self.BPM = 125
       self.measures = 84
@@ -153,23 +162,21 @@ class Beatmap:
 
     self.measure_len = self.time_signature/(self.BPM/60)*1000
     self.end_frames = round(self.measure_len*(FPS/1000)*self.measures)+FPS*2
-    print(self.end_frames)
 
     self.playing = False
 
     #Processing the data
-    for measure in data:
+    for i, measure in enumerate(data):
       subdivision = measure[0] 
       notelist = measure[1]
       if subdivision != None:
-        for i, beat in enumerate(notelist):
-          time = round(self.measure_len/subdivision*i*(FPS/1000))
+        for j, beat in enumerate(notelist):
+          time = round(self.measure_len*i*(FPS/1000)+(self.measure_len/subdivision*j)*(FPS/1000))
           for note in beat:
             key = note["key"]
             type = note["type"]
             self.data[key].append([time, type])
     
-    print(self.data)
 
 
   def start(self):
@@ -225,7 +232,6 @@ class Note:
     self.centery = self.rect.centery
     
     if self.end_anim:
-      print("RAN")
       if self.perfect_anim:
         self.color = PERFECT_COLOR
       elif self.excellent_anim:
@@ -241,6 +247,9 @@ class Note:
       
       if self.end_anim_frames >= self.end_anim_frame_limit:
         return True
+    
+    if self.rect.top > WINDOW_HEIGHT:
+      return True
 
     return False
 
@@ -305,7 +314,7 @@ class FeedbackText:
 
 class game_screen:
   #Initializes all of the variables that are needed for the screen to work
-  def __init__(self, level, data, keys):
+  def __init__(self, level, data, keys, isCustom):
 
     #STATE
     self.running = False
@@ -322,6 +331,7 @@ class game_screen:
 
     #Param
     self.level = level
+    self.level.scroll_pos = 0
 
     #Keys
     self.keys = []
@@ -347,7 +357,10 @@ class game_screen:
 
     #Test
     self.data = data
-    self.beatmap = Beatmap("Megalovania", self.keys, data)
+    try:
+      self.beatmap = Beatmap(self.level.name, self.keys, data)
+    except:
+      pass
     self.init = False
 
     #Top BG
@@ -358,6 +371,13 @@ class game_screen:
 
     #Score Text
     self.score_text_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
+
+    #Back Button
+    self.back_btn = Button((20, 20), (60, 60), (0, 0, 0))
+    self.back_btn.add_border(5, (255, 255, 255))
+    self.back_btn_image = pygame.transform.flip(pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40)), True, False)
+    self.back_btn_image_rect = self.back_btn_image.get_rect()
+    self.back_btn_image_rect.center = (50, 50)
 
     
 
@@ -371,6 +391,26 @@ class game_screen:
 
     #End Animation
     self.end_anim = False
+    self.end_anim_frames = 0
+    self.max_end_anim_frames = 30
+    self.end_anim_interval = 5
+    self.end_anim_metainterval = 1
+
+    #Endscreen Shown
+    self.endscreen_shown = False
+
+    #Endscreen
+    self.endscreen_surface = pygame.Surface((1200, 800))
+    self.endscreen_surface.set_alpha(0)
+    self.endscreen_surface_begin = False
+
+    self.title_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 50)
+    self.score_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
+    self.streak_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
+
+    self.title = self.title_font.render(f"{self.beatmap.song_str} Completed!", True, (255, 255, 255))
+    self.title_rect = self.title.get_rect()
+    self.title_rect.center = (600, 150)
 
     #Feedback text
     self.feedback_text = []
@@ -379,6 +419,8 @@ class game_screen:
     self.hits = []
     self.score = 0
     self.streak = 0
+    self.highest_streak = 0
+    self.isCustom = isCustom
 
 
   
@@ -407,7 +449,7 @@ class game_screen:
     
 
     """PROCESSING"""
-    if self.beatmap.update() == "End":
+    if self.beatmap.update() == "End" and not self.endscreen_shown:
       self.end_anim = True
 
     for key in self.keys:
@@ -420,12 +462,19 @@ class game_screen:
       self.beatmap.start()
 
 
-    print(f"{self.beatmap.frames}, {self.end_anim}")
+
+    #Back Button
+    self.back_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+    if self.back_btn.check_press(self.mousePos, self.mouseUp):
+      pygame.mixer.music.stop()
+      if not self.isCustom:
+        return "menu_init"
+      else:
+        return "creator"
 
 
     #Begin Animation
     if self.begin_anim:
-      print("HO")
       if self.begin_frames >= self.beginning_delay:
         self.begin_anim = False
         self.init = True
@@ -439,19 +488,61 @@ class game_screen:
           for key in self.keys:
             key.outline.top = 650
             self.keys_begin_anim = False
+    
+    #End Animation
+    if self.end_anim:
+      if self.end_anim_frames >= self.max_end_anim_frames:
+        self.end_anim = False
+        self.endscreen_shown = True
+        self.endscreen_surface_begin = True
+        print("RAN")
+      else:
+        self.level.running_animation = True
+        self.level.chosen = True
+        self.level.scroll_pos -= self.end_anim_interval
+        self.level.update(0, self.mousePos)
+
+        for key in self.keys:
+          key.outline.top += self.end_anim_interval
+
+        self.end_anim_interval += self.end_anim_metainterval
+        self.end_anim_frames += 1
+
+    #Endscreen
+    if self.endscreen_shown:
+      if self.endscreen_surface_begin:
+        if self.endscreen_surface.get_alpha() < 255:
+          self.endscreen_surface.set_alpha(self.endscreen_surface.get_alpha()+15)
+        print(self.endscreen_surface.get_alpha() < 255)
+        self.endscreen_surface.blit(self.title, self.title_rect)
+
+        self.end_score_text = self.score_font.render(f"Score: {self.score}", True, (255, 255, 255))
+        self.end_score_text_rect = self.end_score_text.get_rect()
+        self.end_score_text_rect.center = (600, 300)
+        self.endscreen_surface.blit(self.end_score_text, self.end_score_text_rect)
+
+        self.end_streak_text = self.streak_font.render(f"Highest Streak: {self.highest_streak}", True, (255, 255, 255))
+        self.end_streak_text_rect = self.end_streak_text.get_rect()
+        self.end_streak_text_rect.center = (600, 400)
+        self.endscreen_surface.blit(self.end_streak_text, self.end_streak_text_rect)
+        
+        #WELL DONE
+
+
+
 
     #Checks Scores
     for hit in self.hits:
       if hit == "Perfect":
-        self.score = round((self.score + 500) * (1+(self.streak*0.05)))
+        self.score = round(self.score + 500 * (1+(self.streak*0.05)))
         self.feedback_text.append(FeedbackText("Perfect"))
         self.streak += 1
       elif hit == "Excellent":
-        self.score = round((self.score + 200) * (1+(self.streak*0.05)))
+        self.score = round(self.score + 200 * (1+(self.streak*0.05)))
         self.feedback_text.append(FeedbackText("Excellent"))
         self.streak += 1
       elif hit == "Good":
-        self.score = round((self.score + 75) * (1+(self.streak*0.05)))
+        self.score = round(self.score + 75 * (1+(self.streak*0.05)))
         self.feedback_text.append(FeedbackText("Good"))
         self.streak += 1
       elif hit == "Miss":
@@ -459,15 +550,24 @@ class game_screen:
         self.streak = 0
     self.hits = []
 
+    if self.streak > self.highest_streak:
+      self.highest_streak = self.streak
+
     #Streak Text
     self.streak_text = self.streak_text_font.render(f"Streak: {self.streak}", True, (255, 255, 255))
     self.streak_text_rect = self.streak_text.get_rect()
-    self.streak_text_rect.center = (150, 50)
+    if not self.end_anim and not self.endscreen_shown:
+      self.streak_text_rect.center = (150, 50)
+    else:
+      self.streak_text_rect.center = (150, 50-self.end_anim_interval/3*self.end_anim_frames)
 
     #Score Text
     self.score_text = self.score_text_font.render(f"Score: {self.score}", True, (255, 255, 255))
     self.score_text_rect = self.score_text.get_rect()
-    self.score_text_rect.center = (1050, 50)
+    if not self.end_anim and not self.endscreen_shown:
+      self.score_text_rect.center = (1050, 50)
+    else:
+      self.score_text_rect.center = (1050, 50-self.end_anim_interval/3*self.end_anim_frames)
 
     #Feedback Text
     delete = []
@@ -495,6 +595,12 @@ class game_screen:
     WINDOW.blit(self.score_text, self.score_text_rect)
     for text in self.feedback_text:
       text.draw(WINDOW)
+
+    if self.endscreen_shown:
+      WINDOW.blit(self.endscreen_surface, (0, 0))
+
+    self.back_btn.draw(WINDOW)
+    WINDOW.blit(self.back_btn_image, self.back_btn_image_rect)
     
 
 

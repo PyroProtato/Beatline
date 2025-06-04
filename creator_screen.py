@@ -1,6 +1,7 @@
 import pygame, sys, random, asyncio, math
 from pygame.locals import *
 from reference.classes_v2 import Button, Dropdown, Slider
+from menu_screen import Level
 pygame.init()
  
 # Colours
@@ -208,6 +209,13 @@ class creator_screen:
     self.next_song_btn_image_rect = self.next_song_btn_image.get_rect()
     self.next_song_btn_image_rect.center = (1145, 630)
 
+    #Test Icon
+    self.test_btn = Button((1115, 250), (60, 60), (0, 0, 0))
+    self.test_btn.add_border(5, (255, 255, 255))
+    self.test_btn_image = pygame.transform.scale(pygame.image.load("images/game_icon.png"), (40, 40))
+    self.test_btn_image_rect = self.test_btn_image.get_rect()
+    self.test_btn_image_rect.center = (1145, 280)
+
     #Song Dropdown
     self.dropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 30)
     self.song_dropdown = Dropdown((400, 100), (400, 25), "Song", ["Megalovania", "Field of Hopes and Dreams", "Hunger"], self.dropdown_font)
@@ -233,12 +241,19 @@ class creator_screen:
     self.measure_indicator = pygame.Rect(0, 600, 5, 55)
     self.measure = 1
 
+    #Back Button
+    self.back_btn = Button((20, 20), (60, 60), (0, 0, 0))
+    self.back_btn.add_border(5, (255, 255, 255))
+    self.back_btn_image = pygame.transform.flip(pygame.transform.scale(pygame.image.load("images/next_icon.png"), (40, 40)), True, False)
+    self.back_btn_image_rect = self.back_btn_image.get_rect()
+    self.back_btn_image_rect.center = (50, 50)
+
 
     #Subdivisions Dropdown
     self.subdivision = 4
     self.previous_sub_value = "Snap To..."
     self.subdropdown_font = pygame.font.Font("fonts/CAT Rhythmus.ttf", 15)
-    self.sub_dropdown = Dropdown((200, 50), (25, 25), "Snap To...", ["1/2 Beat", "1/3 Beat", "1/4 Beat", "1/6 Beat", "1/8 Beat", "1/12 Beat", "1/16 Beat"], self.subdropdown_font)
+    self.sub_dropdown = Dropdown((200, 50), (125, 25), "Snap To...", ["1/2 Beat", "1/3 Beat", "1/4 Beat", "1/6 Beat", "1/8 Beat", "1/12 Beat", "1/16 Beat"], self.subdropdown_font)
 
     #Data
     self.data = [[None, [[] for x in range(self.subdivision)]] for y in range(self.measures)]
@@ -251,9 +266,18 @@ class creator_screen:
 
     #Keys
     self.keys = []
-    self.keys.append(Key(K_j, "J", (200, 300)))
-    self.keys.append(Key(K_k, "K", (400, 300)))
-    self.keys.append(Key(K_l, "L", (600, 300)))
+    #self.keys.append(Key(K_j, "J", (200, 300)))
+    #self.keys.append(Key(K_k, "K", (400, 300)))
+    #self.keys.append(Key(K_l, "L", (600, 300)))
+
+    self.keys.append(Key(K_j, "J", (750, 400)))
+    self.keys.append(Key(K_k, "K", (850, 400)))
+    self.keys.append(Key(K_l, "L", (950, 400)))
+    self.keys.append(Key(K_SEMICOLON, ";", (1050, 400)))
+    self.keys.append(Key(K_a, "A", (50, 400)))
+    self.keys.append(Key(K_s, "S", (150, 400)))
+    self.keys.append(Key(K_d, "D", (250, 400)))
+    self.keys.append(Key(K_f, "F", (350, 400)))
 
     #Misc
     self.selected_subdivision = 4
@@ -303,6 +327,13 @@ class creator_screen:
     self.measure_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
     if self.measure_btn.check_press(self.mousePos, self.mouseUp):
       self.song.play_measure(self.measure)
+    
+
+    #Back Button
+    self.back_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+    if self.back_btn.check_press(self.mousePos, self.mouseUp):
+      pygame.mixer.music.stop()
+      return "menu_init", None, None, None
 
     
     
@@ -320,6 +351,7 @@ class creator_screen:
       self.song_slider = Slider((1000, 20), (100, 690), (20, 40), 1, self.song.measures, 1)
       self.song_slider.change_slider(slider_rect_color=(255, 255, 255))
       self.data = [[None, [[] for x in range(self.subdivision)]] for y in range(self.song.measures)]
+      self.data = [[8, [[{'key': 'F', 'type': 1}, {'key': 'J', 'type': 1}], [], [], [{'key': 'F', 'type': 1}, {'key': 'J', 'type': 1}], [], [], [{'key': 'F', 'type': 1}, {'key': 'J', 'type': 1}], [{'key': 'F', 'type': 1}, {'key': 'J', 'type': 1}]]], [16, [[{'key': 'K', 'type': 1}, {'key': 'D', 'type': 1}], [], [], [], [], [], [{'key': 'A', 'type': 1}, {'key': ';', 'type': 1}], [], [], [], [], [], [], [{'key': 'A', 'type': 1}, {'key': ';', 'type': 1}], [], []]], [16, [[{'key': 'F', 'type': 1}, {'key': 'J', 'type': 1}], [], [], [], [], [{'key': 'J', 'type': 1}], [{'key': 'J', 'type': 1}], [{'key': 'J', 'type': 1}], [{'key': 'K', 'type': 1}], [{'key': 'L', 'type': 1}], [], [{'key': 'K', 'type': 1}], [], [{'key': 'J', 'type': 1}], [], []]], [16, [[], [], [], [], [{'key': 'K', 'type': 1}], [{'key': 'K', 'type': 1}], [{'key': 'K', 'type': 1}], [{'key': 'L', 'type': 1}], [{'key': ';', 'type': 1}], [], [{'key': 'L', 'type': 1}], [], [{'key': 'K', 'type': 1}], [], [], []]], [16, [[{'key': 'F', 'type': 1}], [], [], [], [], [], [], [{'key': 'D', 'type': 1}], [], [], [], [], [], [], [], []]], [16, [[{'key': 'S', 'type': 1}], [], [], [], [], [], [], [{'key': 'A', 'type': 1}], [], [], [{'key': 'K', 'type': 1}], [], [{'key': 'K', 'type': 1}], [], [{'key': 'K', 'type': 1}], []]], [16, [[{'key': 'F', 'type': 1}], [], [], [], [], [], [], [{'key': 'D', 'type': 1}], [], [], [], [], [{'key': 'F', 'type': 1}], [], [{'key': 'D', 'type': 1}], []]], [16, [[{'key': 'S', 'type': 1}], [], [], [], [], [], [], [{'key': 'A', 'type': 1}], [], [], [], [], [], [], [{'key': 'D', 'type': 1}], []]], [16, [[{'key': 'K', 'type': 1}, {'key': ';', 'type': 1}], [], [], [], [], [], [], [], [{'key': 'L', 'type': 1}, {'key': 'J', 'type': 1}], [], [], [], [], [], [], []]], [16, [[{'key': 'L', 'type': 1}], [], [{'key': 'L', 'type': 1}], [], [{'key': 'L', 'type': 1}], [], [{'key': 'J', 'type': 1}], [], [], [], [], [], [], [], [{'key': 'J', 'type': 1}], []]], [16, [[{'key': ';', 'type': 1}], [], [], [], [], [], [{'key': ';', 'type': 1}], [], [{'key': 'K', 'type': 1}], [], [], [], [], [], [], []]], [16, [[{'key': 'K', 'type': 1}], [], [{'key': 'K', 'type': 1}], [], [{'key': 'K', 'type': 1}], [{'key': 'L', 'type': 1}], [{'key': ';', 'type': 1}], [], [], [], [], [], [], [], [], []]], [16, [[{'key': 'F', 'type': 1}], [], [], [], [], [], [], [], [{'key': 'F', 'type': 1}], [], [], [], [], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [None, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]], [4, [[], [], [], []]]]
     self.previous_song = self.song_dropdown.value
 
     if self.song_chosen:
@@ -338,15 +370,26 @@ class creator_screen:
       if self.next_measure_btn.check_press(self.mousePos, self.mouseUp) and self.measure != self.song.measures:
         self.measure += 1
     
-    #Previous Song Button
-      self.prev_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
-      if self.prev_song_btn.check_press(self.mousePos, self.mouseUp) and self.measure_slider.step != 0:
-        self.measure_slider.step -= 1
+    
 
-    #next Song Button
-      self.next_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
-      if self.next_song_btn.check_press(self.mousePos, self.mouseUp) and self.measure_slider.step != self.subdivision-1:
-        self.measure_slider.step += 1
+    #Test Button
+      self.test_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      if self.test_btn.check_press(self.mousePos, self.mouseUp):
+        key_strs = []
+        for key in self.keys:
+          key_strs.append(key.key_str)
+        file = ""
+        author = ""
+        if self.song_dropdown.value == "Megalovania":
+          file = "images/HD-wallpaper-sans-undertale (1).png"
+          author = "Toby Fox"
+        elif self.song_dropdown.value == "Field of Hopes and Dreams":
+          file = "images/deltarune_fileselect.png"
+          author = "Toby Fox"
+        elif self.song_dropdown.value == "Hunger":
+          file = "images/theFatRat-Hunger.png"
+          author = "TheFatRat"
+        return "test_init", Level(self.song_dropdown.value, file, author, "Custom", 5), self.data, key_strs
 
     self.sub_dropdown.update(self.mousePos, self.mouseDown, self.mouseUp)
     if self.song_chosen and self.previous_sub_value != self.sub_dropdown.value: #When subdivision is changed
@@ -358,6 +401,25 @@ class creator_screen:
         self.data[self.measure-1] = [self.subdivision, [[] for x in range(self.subdivision)]]
         self.selected_subdivision = self.subdivision
     self.previous_sub_value = self.sub_dropdown.value
+
+    if self.song_chosen:
+    #Previous Song Button
+      self.prev_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      pressed = self.prev_song_btn.check_press(self.mousePos, self.mouseUp)
+      if pressed and self.measure_slider.step != 0:
+        self.measure_slider.step -= 1
+      elif pressed and self.measure_slider.step == 0 and self.measure != 1:
+        self.measure_slider.step = self.subdivision-1
+        self.measure -= 1
+
+    #next Song Button
+      self.next_song_btn.update((100, 100, 100), (50, 50, 50), self.mousePos, self.mouseIsDown)
+      pressed = self.next_song_btn.check_press(self.mousePos, self.mouseUp)
+      if pressed and self.measure_slider.step != self.subdivision-1:
+        self.measure_slider.step += 1
+      elif pressed and self.measure_slider.step == self.subdivision - 1 and self.measure != self.song.measures:
+        self.measure_slider.step = 0
+        self.measure += 1
     
 
 
@@ -414,6 +476,8 @@ class creator_screen:
             temp = True
         if temp:
           key.has_beat()
+          if key.check_press(self.mousePos, self.mouseUp):
+            self.data[self.measure-1][1][self.measure_slider.step] = [data for data in self.data[self.measure-1][1][self.measure_slider.step] if data["key"] != key.key_str]
         else:
           key.no_beat()
           if key.check_press(self.mousePos, self.mouseUp):
@@ -446,6 +510,8 @@ class creator_screen:
       WINDOW.blit(self.prev_song_btn_image, self.prev_song_btn_image_rect)
       self.next_song_btn.draw(WINDOW)
       WINDOW.blit(self.next_song_btn_image, self.next_song_btn_image_rect)
+      self.test_btn.draw(WINDOW)
+      WINDOW.blit(self.test_btn_image, self.test_btn_image_rect)
 
       self.measure_btn.draw(WINDOW)
       WINDOW.blit(self.measure_btn_image, self.measure_btn_image_rect)
@@ -455,6 +521,11 @@ class creator_screen:
       pygame.draw.rect(WINDOW, (255, 255, 255), self.measure_indicator)
       for key in self.keys:
         key.draw(WINDOW)
+
+      self.back_btn.draw(WINDOW)
+      WINDOW.blit(self.back_btn_image, self.back_btn_image_rect)
+    
+    return "creator", None, None, None
       
     
 
