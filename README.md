@@ -8,6 +8,10 @@ Additionally, this comes with a working beatmap creator for songs! Although it d
 Playable Demo: [https://pyroprotato.itch.io/beatline](https://pyroprotato.itch.io/beatline)
 Video Demo: [https://youtu.be/vM3RL6aBsSU](https://youtu.be/vM3RL6aBsSU)
 
+
+## For Beatmap Creator
+Download the repo folder as a zip, extract it, and run the main.exe file. The game should start automatically and you should be able to use the beatmap crreator. Otherwise just watch the demo video.
+
 ## Background
 I genuinely love rhythm games, there's something so fun about the tight syncronization between music and inputs. I'm starting to learn other languages such as Java after focusing on python and pygame for so long, so I think that this will be a good closing project in order to showcase all that I've learned.
 I had a lot of fun making this and am pretty proud of the result. I'll definitely return again and polish some aspects of the game.
