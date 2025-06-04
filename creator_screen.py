@@ -1,6 +1,6 @@
 import pygame, sys, random, asyncio, math
 from pygame.locals import *
-from reference.classes_v2 import Button, Dropdown, Slider
+from reference.classes_v2 import Button, Dropdown, Slider, MultilineText
 from menu_screen import Level
 pygame.init()
  
@@ -281,6 +281,11 @@ class creator_screen:
 
     #Misc
     self.selected_subdivision = 4
+
+
+    #warning
+    boundary_rect = pygame.Rect(100, 200, 1000, 300)
+    self.warning = MultilineText("This creator unfortunately doesn't work that well in the web version, check the github (https://github.com/PyroProtato/Beatline/tree/main) to watch the youtube demo for it or download the github folder and run the main.exe file to try it!", self.measure_text_font, (255, 255, 255), boundary_rect, 40)
     
     
   
@@ -523,6 +528,8 @@ class creator_screen:
 
       self.back_btn.draw(WINDOW)
       WINDOW.blit(self.back_btn_image, self.back_btn_image_rect)
+
+      #self.warning.draw(WINDOW)
     
     return "creator", None, None, None
       
