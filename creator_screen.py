@@ -8,7 +8,7 @@ pygame.init()
 COLOR_BACKGROUND = (0, 0, 0)
  
 # Game Setup
-FPS = 60
+FPS = 30
 fpsClock = pygame.time.Clock()
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
@@ -487,7 +487,6 @@ class creator_screen:
           if key.check_press(self.mousePos, self.mouseUp):
             self.data[self.measure-1][1][self.measure_slider.step].append({"key":key.key_str, "type":1})
     
-    print(self.data)
 
 
 
@@ -529,7 +528,7 @@ class creator_screen:
       self.back_btn.draw(WINDOW)
       WINDOW.blit(self.back_btn_image, self.back_btn_image_rect)
 
-      #self.warning.draw(WINDOW)
+      self.warning.draw(WINDOW)
     
     return "creator", None, None, None
       

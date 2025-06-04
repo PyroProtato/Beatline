@@ -8,7 +8,7 @@ pygame.init()
  
 
 # Game Setup
-FPS = 60
+FPS = 30
 fpsClock = pygame.time.Clock()
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
@@ -123,7 +123,7 @@ async def main () :
 
  
     """UPDATE and FPS"""
-    pygame.display.update()
+    pygame.display.flip()
     fpsClock.tick(FPS)
 
     await asyncio.sleep(0)

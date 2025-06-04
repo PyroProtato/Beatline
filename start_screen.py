@@ -7,7 +7,7 @@ pygame.init()
 COLOR_BACKGROUND = (0, 0, 0)
  
 # Game Setup
-FPS = 60
+FPS = 30
 fpsClock = pygame.time.Clock()
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800

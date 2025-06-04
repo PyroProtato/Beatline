@@ -8,7 +8,7 @@ pygame.init()
 COLOR_BACKGROUND = (0, 0, 0)
  
 # Game Setup
-FPS = 60
+FPS = 30
 fpsClock = pygame.time.Clock()
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
@@ -17,7 +17,7 @@ WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE
 pygame.display.set_caption('Window')
 
 DELAY_SECONDS = 1
-NOTE_SPEED = 10
+NOTE_SPEED = 20
 
 PERFECT_COLOR = (255, 255, 50)
 EXCELLENT_COLOR = (255, 100, 255)
@@ -495,7 +495,6 @@ class game_screen:
         self.end_anim = False
         self.endscreen_shown = True
         self.endscreen_surface_begin = True
-        print("RAN")
       else:
         self.level.running_animation = True
         self.level.chosen = True
@@ -513,7 +512,6 @@ class game_screen:
       if self.endscreen_surface_begin:
         if self.endscreen_surface.get_alpha() < 255:
           self.endscreen_surface.set_alpha(self.endscreen_surface.get_alpha()+15)
-        print(self.endscreen_surface.get_alpha() < 255)
         self.endscreen_surface.blit(self.title, self.title_rect)
 
         self.end_score_text = self.score_font.render(f"Score: {self.score}", True, (255, 255, 255))
