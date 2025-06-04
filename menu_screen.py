@@ -176,8 +176,8 @@ class menu_screen:
 
     #Levels
     self.levels = []
-    self.levels.append(Level("Field of Hopes an...", "images/deltarune_fileselect.png", "Toby Fox", 2, 1))
-    self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 4, 2))
+    self.levels.append(Level("Field of Hopes an...", "images/deltarune_fileselect.png", "Toby Fox", 3, 1))
+    self.levels.append(Level("Hunger", "images/theFatRat-Hunger.png", "TheFatRat", 1, 2))
     self.levels.append(Level("Megalovania", "images/HD-wallpaper-sans-undertale (1).png", "Toby Fox", 5, 3))
 
 
