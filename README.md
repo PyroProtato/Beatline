@@ -5,7 +5,8 @@ Beatline is a minimalistic rhythm game built in Pygame! It used pygbag to conver
 Additionally, this comes with a working beatmap creator for songs! Although it doesn't work on the web version (pygame.mixer.music.get_pos() isn't supported) you can download the whole folder and run the main.exe file to run it locally and it will work. Additionally, check out the demo below.
 
 ## Demo
-[https://youtu.be/vM3RL6aBsSU](https://youtu.be/vM3RL6aBsSU)
+Playable Demo: [https://pyroprotato.itch.io/beatline](https://pyroprotato.itch.io/beatline)
+Video Demo: [https://youtu.be/vM3RL6aBsSU](https://youtu.be/vM3RL6aBsSU)
 
 ## Background
 I genuinely love rhythm games, there's something so fun about the tight syncronization between music and inputs. I'm starting to learn other languages such as Java after focusing on python and pygame for so long, so I think that this will be a good closing project in order to showcase all that I've learned.
